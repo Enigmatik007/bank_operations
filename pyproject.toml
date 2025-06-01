@@ -7,6 +7,9 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.9"
+python-dateutil = "^2.8.2"  # для widget.py (работа с датами)
+typing-extensions = "^4.8.0"  # для аннотаций типов
+
 
 [tool.poetry.group.lint.dependencies]
 flake8 = "^7.2.0"
