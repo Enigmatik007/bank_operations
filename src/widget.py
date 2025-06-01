@@ -1,24 +1,26 @@
 from datetime import datetime
 
-from .masks import get_mask_account, get_mask_card_number
+from src.masks import get_mask_account, get_mask_card_number
 
 
 def mask_account_card(data: str) -> str:
     """
-    Маскирует номер карты/счета в переданной строке.
-
-    Примеры:
-    >>> mask_account_card("Visa Platinum 7000792289606361")
-    'Visa Platinum 7000 79** **** 6361'
-    >>> mask_account_card("Счет 73654108430135874305")
-    'Счет **4305'
+    Автоматически определяет тип (карта/счет) и применяет соответствующую маскировку.
 
     Args:
-        data: Строка формата "Тип Номер" (например, "Visa Platinum 7000792289606361")
+        data (str): Строка формата "Тип Номер" (например, "Visa 7000792289606361").
+
     Returns:
-        Замаскированная строка
+        str: Замаскированная строка.
+
     Raises:
-        ValueError: Если номер некорректен
+        ValueError: Если номер не проходит валидацию.
+
+    Примеры:
+        >>> mask_account_card("Visa Platinum 7000792289606361")
+        'Visa Platinum 7000 79** **** 6361'
+        >>> mask_account_card("Счет 73654108430135874305")
+        'Счет **4305'
     """
     if "счет" in data.lower():
         parts = data.split()
@@ -30,10 +32,16 @@ def mask_account_card(data: str) -> str:
 
 def get_date(date_str: str) -> str:
     """
-    Конвертирует дату из формата ISO в "ДД.ММ.ГГГГ".
+    Конвертирует дату из ISO-формата в русский формат.
+
+    Args:
+        date_str (str): Дата в формате ISO (например, "2024-03-11T02:26:18.671407").
+
+    Returns:
+        str: Дата в формате "ДД.ММ.ГГГГ".
 
     Пример:
-    >>> get_date("2024-03-11T02:26:18.671407")
-    '11.03.2024'
+        >>> get_date("2024-03-11T02:26:18.671407")
+        '11.03.2024'
     """
     return datetime.fromisoformat(date_str).strftime("%d.%m.%Y")
