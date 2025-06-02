@@ -1,7 +1,18 @@
-﻿__pycache__/
+﻿# Python cache
+__pycache__/
 *.py[cod]
+
+# IDEs
 .idea/
+
+# Virtual environments
 .env/
 venv/
+
+# Logs and temp files
 *.log
 *.tmp
+
+# Coverage reports
+.coverage
+htmlcov/
