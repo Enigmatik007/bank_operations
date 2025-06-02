@@ -51,6 +51,7 @@ known_first_party = ["bank_operations"]
 python_version = "3.9"
 disallow_untyped_defs = true
 warn_return_any = true
+strict_optional = true
 warn_unused_configs = true
 disallow_incomplete_defs = true
 check_untyped_defs = true
