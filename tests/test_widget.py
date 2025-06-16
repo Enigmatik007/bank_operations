@@ -14,8 +14,8 @@ class TestWidgetFunctions:
     )
     def test_get_date(self, input_date: str, expected: str) -> None:
         """
-        Параметризованный тест для форматирования даты.
-        """
+    #     Параметризованный тест для форматирования даты.
+    #     """
         assert get_date(input_date) == expected
 
     def test_mask_account_card(self, card_and_account_data: list[tuple[str, str]]) -> None:
