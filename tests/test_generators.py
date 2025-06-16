@@ -1,5 +1,5 @@
 import pytest
-from generators import filter_by_currency, transaction_descriptions, card_number_generator
+from src.generators import filter_by_currency, transaction_descriptions, card_number_generator
 
 @pytest.fixture
 def sample_transactions():
