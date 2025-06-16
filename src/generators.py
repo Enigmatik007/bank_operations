@@ -1,3 +1,5 @@
+from typing import Generator  # Добавляем импорт
+
 def filter_by_currency(transactions: list[dict], currency: str) -> filter:
     """
     Фильтрует транзакции по заданной валюте.
