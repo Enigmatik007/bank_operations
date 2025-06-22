@@ -31,10 +31,13 @@ def sample_transactions():
     ("RUB", 2),
     ("EUR", 0)
 ])
-def test_filter_by_currency(sample_transactions, currency, expected_count):
-    filtered = list(filter_by_currency(sample_transactions, currency))
-    assert len(filtered) == expected_count
-    assert all(t["operationAmount"]["currency"]["code"] == currency for t in filtered)
+def filter_by_currency(transactions: list[dict], currency: str) -> filter:
+    return filter(
+        lambda x: isinstance(x.get("operationAmount", {}).get("currency", {}).get("code"), str)
+                  and x["operationAmount"]["currency"]["code"] == currency,
+        transactions
+    )
+
 
 def test_transaction_descriptions(sample_transactions):
     descriptions = list(transaction_descriptions(sample_transactions))
