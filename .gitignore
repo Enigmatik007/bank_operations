@@ -15,4 +15,4 @@ venv/
 
 # Coverage reports
 .coverage
-htmlcov/
+#htmlcov/
