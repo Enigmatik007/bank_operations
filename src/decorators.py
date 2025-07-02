@@ -1,7 +1,7 @@
 # decorators.py
+import functools
 from datetime import datetime
 from typing import Any, Callable, Optional, TypeVar, cast
-import functools
 
 F = TypeVar('F', bound=Callable[..., Any])
 
@@ -35,10 +35,7 @@ def log(filename: Optional[str] = None) -> Callable[[F], F]:
 
                 return result
             except Exception as e:
-                error_message = (
-                    f"{start_time} - {func_name} error: {type(e).__name__}. "
-                    f"Inputs: {args}, {kwargs}\n"
-                )
+                error_message = f"{start_time} - {func_name} error: {type(e).__name__}. " f"Inputs: {args}, {kwargs}\n"
 
                 if filename:
                     with open(filename, "a", encoding="utf-8") as f:
