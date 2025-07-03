@@ -1,42 +1,44 @@
-# utils.py
+"""Модуль для работы с транзакциями.
+
+Содержит функции для загрузки данных из JSON-файлов.
+"""
+
 import json
 import logging
 from typing import Any, Dict, List
+from src.log_config import setup_logger
 
-# Настройка логера для модуля utils
-logger = logging.getLogger("utils")
-logger.setLevel(logging.DEBUG)
-
-# Создаем файловый обработчик (перезаписывает файл при каждом запуске)
-file_handler = logging.FileHandler("logs/utils.log", mode="w")
-file_handler.setLevel(logging.DEBUG)
-
-# Форматируем логи
-formatter = logging.Formatter(
-    "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S"
-)
-file_handler.setFormatter(formatter)
-
-# Добавляем обработчик к логеру
-logger.addHandler(file_handler)
-
+logger = setup_logger(__name__, "logs/utils.log")
 
 def load_transactions(file_path: str) -> List[Dict[str, Any]]:
-    """
-    Загружает транзакции из JSON-файла с логированием.
+    """Загружает транзакции из JSON-файла.
+
+    Args:
+        file_path: Путь к JSON-файлу с транзакциями.
+
+    Returns:
+        Список словарей с транзакциями. Возвращает пустой список при:
+        - Отсутствии файла
+        - Ошибках формата JSON
+        - Некорректном формате данных
+
+    Examples:
+        >>> load_transactions("operations.json")
+        [{"id": 441945886, "state": "EXECUTED"}]
     """
     try:
         with open(file_path, "r", encoding="utf-8") as f:
             data = json.load(f)
-            if isinstance(data, list):
-                logger.info(f"Успешно загружено {len(data)} транзакций из {file_path}")
-                return data
-            logger.warning(f"Файл {file_path} не содержит список транзакций")
-            return []
+
+            if not isinstance(data, list):
+                logger.warning("Файл %s не содержит список", file_path)
+                return []
+
+            return data
+
     except FileNotFoundError:
-        logger.error(f"Файл не найден: {file_path}")
+        logger.error("Файл не найден: %s", file_path)
         return []
-    except json.JSONDecodeError:
-        logger.error(f"Ошибка декодирования JSON в файле: {file_path}")
+    except json.JSONDecodeError as e:
+        logger.error("Ошибка JSON в %s: %s", file_path, str(e))
         return []

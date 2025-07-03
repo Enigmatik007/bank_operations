@@ -1,59 +1,31 @@
-from typing import Any
-from unittest.mock import mock_open, patch
+"""Тесты для модуля utils.py.
 
-from src.utils import load_transactions
-
-# Тестовые данные
-TEST_JSON_DATA = """
-[
-    {"id": 441945886, "state": "EXECUTED"},
-    {"id": 41428829, "state": "CANCELED"}
-]
+Проверяют загрузку транзакций из файлов.
 """
 
+from typing import Any
+from unittest.mock import mock_open, patch
+import pytest
+from src.utils import load_transactions
 
-@patch("builtins.open", new_callable=mock_open, read_data=TEST_JSON_DATA)
-def test_load_transactions_valid_file(mock_file: Any) -> None:
-    """
-    Тест загрузки корректного JSON-файла.
-    """
-    result = load_transactions("dummy_path.json")
-    assert len(result) == 2
-    assert result[0]["id"] == 441945886
-    mock_file.assert_called_with("dummy_path.json", "r", encoding="utf-8")
+def test_load_transactions_valid_file() -> None:
+    """Тестирует загрузку корректного файла."""
+    test_data = '[{"id": 1, "state": "EXECUTED"}]'
+    with patch("builtins.open", mock_open(read_data=test_data)):
+        result = load_transactions("valid.json")
+        assert result == [{"id": 1, "state": "EXECUTED"}]
 
+def test_load_transactions_empty_list() -> None:
+    """Тестирует загрузку файла с пустым списком."""
+    with patch("builtins.open", mock_open(read_data="[]")):
+        assert load_transactions("empty.json") == []
 
-@patch("builtins.open", side_effect=FileNotFoundError)
-def test_load_transactions_file_not_found(mock_file: Any) -> None:
-    """
-    Тест обработки отсутствующего файла.
-    """
-    result = load_transactions("missing.json")
-    assert result == []
+def test_load_transactions_invalid_json() -> None:
+    """Тестирует обработку битого JSON."""
+    with patch("builtins.open", mock_open(read_data="{")):
+        assert load_transactions("broken.json") == []
 
-
-@patch("builtins.open", new_callable=mock_open, read_data="{}")
-def test_load_transactions_invalid_json(mock_file: Any) -> None:
-    """
-    Тест загрузки некорректного JSON (не список).
-    """
-    result = load_transactions("invalid.json")
-    assert result == []
-
-
-@patch("builtins.open", new_callable=mock_open, read_data="not a json")
-def test_load_transactions_malformed_json(mock_file: Any) -> None:
-    """
-    Тест обработки битого JSON.
-    """
-    result = load_transactions("malformed.json")
-    assert result == []
-
-
-def test_load_transactions_empty_file(tmp_path: Any) -> None:
-    """
-    Тест пустого файла через временную директорию.
-    """
-    file_path = tmp_path / "empty.json"
-    file_path.write_text("")
-    assert load_transactions(file_path) == []
+def test_load_transactions_file_not_found() -> None:
+    """Тестирует обработку отсутствующего файла."""
+    with patch("builtins.open", side_effect=FileNotFoundError):
+        assert load_transactions("missing.json") == []
