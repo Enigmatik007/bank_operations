@@ -79,46 +79,52 @@ def convert_to_rub(transaction: dict) -> float | None  # Конвертация 
 ## 🚀 Примеры использования
 
 ```python
-from src.generators import filter_by_currency, card_number_generator
+from src.utils import load_transactions
+from src.processing import filter_by_state, sort_by_date
 from src.widget import mask_account_card, get_date
 
-usd_ops = filter_by_currency(transactions, "USD")
-print(next(usd_ops))
+# Загрузка данных
+transactions = load_transactions("data/operations.json")
 
-for num in card_number_generator(1, 3):
-    print(num)  # 0000 0000 0000 0001 ...
+# Фильтрация и сортировка
+processed = sort_by_date(
+    filter_by_state(transactions, "EXECUTED")
+)
 
-print(mask_account_card("Visa 7000792289606361"))  # Visa 7000 79** **** 6361
-print(get_date("2024-03-11T02:26:18.671407"))  # 11.03.2024
+# Вывод результатов
+for op in processed[:5]:
+    date = get_date(op["date"])
+    desc = mask_account_card(op["description"])
+    print(f"{date} {desc}: {op['amount']} {op['currency']}")
 ```
 
 ---
 
 ## 🧪 Тестирование (100%)
 
-Запуск тестов и генерация отчёта покрытия:
-
-```bash
+# Запуск всех тестов с отчетом о покрытии
 poetry run pytest --cov=src --cov-report=html
-start htmlcov/index.html  # открыть отчет в браузере (Windows)
-```
+
+# Открыть отчет в браузере (Windows)
+start htmlcov/index.html
+
+# Проверка стиля кода
+poetry run flake8 src/
+poetry run black --check src/
+poetry run isort --check src/
 
 ### Структура тестов
 
 ```
 tests/
-├── init.py # Инициализация тестового пакета
-├── conftest.py # Общие фикстуры:
-│ # - sample_transactions
-│ # - card_and_account_data
-│ # - mock_api
-├── test_decorators.py # Тесты декоратора @log
-├── test_external_api.py # Тесты работы с внешним API
-├── test_generators.py # Тесты генераторов транзакций
-├── test_masks.py # Тесты функций маскировки
-├── test_processing.py # Тесты обработки операций
-├── test_utils.py # Тесты загрузки данных
-└── test_widget.py # Тесты виджета (маскировка + даты)
+├── conftest.py            # Общие фикстуры
+├── test_decorators.py     # Тесты логирования
+├── test_external_api.py   # Тесты API (моки + реальные запросы)
+├── test_generators.py     # Тесты генераторов
+├── test_masks.py          # Тесты маскировки
+├── test_processing.py     # Тесты обработки
+├── test_utils.py          # Тесты загрузки данных
+└── test_widget.py         # Тесты виджетов
 ```
 
 Все тесты покрыты параметризацией и снабжены комментариями.
