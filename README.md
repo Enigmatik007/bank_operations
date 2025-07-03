@@ -5,15 +5,14 @@
 <h1 align="center">💳 Банковские операции</h1>
 
 <p align="center">
-  <strong>Обработка, Маскировка и Генерация транзакций на Python</strong><br>
-  <em>С фокусом на генераторы, тесты и контроль качества</em>
+  <strong>Полный набор инструментов для работы с банковскими транзакциями</strong><br>
+  <em>Генерация, маскировка, конвертация и анализ с 100% покрытием тестами</em>
 </p>
 
 <p align="center">
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.12+-blue.svg" alt="Python"></a>
   <a href="https://python-poetry.org/"><img src="https://img.shields.io/badge/Poetry-1.8+-orange.svg" alt="Poetry"></a>
-  <img src="https://img.shields.io/badge/Coverage-85%25-brightgreen.svg" alt="Coverage">
-  <img src="https://img.shields.io/github/actions/workflow/status/Enigmatik007/bank_operations/tests.yml?branch=main&label=CI" alt="GitHub Actions">
+  <img src="https://img.shields.io/badge/Coverage-100%25-brightgreen.svg" alt="Coverage">
 </p>
 
 ---
@@ -51,13 +50,30 @@ poetry install
 - `mask_account_card(data)` — автоматическая маскировка карты или счёта.
 - `get_date(date_str)` — преобразует дату из ISO в формат `ДД.ММ.ГГГГ`.
 
-### 📝 decorators.py — система логирования
+
+### 📊 Загрузка данных (utils.py)
+
+```python
+  
+def load_transactions(file_path: str) -> list[dict]  # Загрузка JSON-файла
+
+```
+
+### 🌐 Внешние API (external_api.py)
+
+```python
+  
+def convert_to_rub(transaction: dict) -> float | None  # Конвертация в RUB через API
+
+```
+
+### 📝 Логирование (decorators.py)
 
 - `@log(filename=None)` — декоратор для логирования вызовов функций:
   - Логирование в файл при указании `filename`
   - Вывод в консоль, если `filename` не указан
   - Фиксация времени, параметров и результатов вызовов
-  - Запись ошибок с сохранением входных парам
+  - Запись ошибок с сохранением входных параметров
 ---
 
 ## 🚀 Примеры использования
@@ -78,7 +94,7 @@ print(get_date("2024-03-11T02:26:18.671407"))  # 11.03.2024
 
 ---
 
-## 🧪 Тестирование
+## 🧪 Тестирование (100%)
 
 Запуск тестов и генерация отчёта покрытия:
 
@@ -91,11 +107,18 @@ start htmlcov/index.html  # открыть отчет в браузере (Windo
 
 ```
 tests/
-├── test_generators.py      # генераторы (валюта, описания, номера)
-├── test_masks.py           # маскировка (валидные/ошибочные случаи)
-├── test_processing.py      # фильтрация и сортировка
-├── test_widget.py          # форматирование даты и маскировка
-├── conftest.py             # фикстуры: операции, номера
+├── __init__.py             # Инициализация тестового пакета
+├── conftest.py             # Общие фикстуры:
+│                           # - sample_transactions
+│                           # - card_and_account_data
+│                           # - mock_api
+├── test_decorators.py      # Тесты декоратора @log
+├── test_external_api.py    # Тесты работы с внешним API
+├── test_generators.py      # Тесты генераторов транзакций
+├── test_masks.py           # Тесты маскировки (валидные/ошибочные случаи)
+├── test_processing.py      # Тесты обработки операций
+├── test_utils.py           # Тесты загрузки данных
+└── test_widget.py          # Тесты виджета (маскировка + даты)
 ```
 
 Все тесты покрыты параметризацией и снабжены комментариями.
@@ -120,9 +143,8 @@ poetry run isort src/
 - 🧠 Полная типизация и валидация
 - 🌀 Использование генераторов
 - 🔒 Маскировка конфиденциальных данных
-- 💯 Покрытие тестами > 85%
+- 💯 Покрытие тестами = 100%
 - 🧪 Параметризованные тесты и фикстуры
-- 🔁 Интеграция с CI/CD через GitHub Actions
 - 📦 Poetry как менеджер зависимостей
 
 ---
