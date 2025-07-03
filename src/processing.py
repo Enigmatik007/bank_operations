@@ -1,24 +1,25 @@
+"""Модуль для обработки и фильтрации банковских транзакций."""
+
+
 def filter_by_state(operations: list[dict], state: str = "EXECUTED") -> list[dict]:
-    """
-    Фильтрует список операций по указанному статусу.
+    """Фильтрует операции по указанному статусу.
 
     Args:
         operations: Список операций.
         state: Статус для фильтрации (по умолчанию "EXECUTED").
 
     Returns:
-        Список операций с указанным статусом.
+        Отфильтрованный список операций.
     """
     return [op for op in operations if op.get("state") == state]
 
 
 def sort_by_date(operations: list[dict], reverse: bool = True) -> list[dict]:
-    """
-    Сортирует операции по дате (по убыванию по умолчанию).
+    """Сортирует операции по дате.
 
     Args:
         operations: Список операций с полем "date".
-        reverse: Порядок сортировки (True - по убыванию).
+        reverse: Флаг сортировки по убыванию (по умолчанию True).
 
     Returns:
         Отсортированный список операций.

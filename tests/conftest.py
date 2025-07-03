@@ -1,3 +1,5 @@
+"""Конфигурация тестов и фикстур для банковских операций."""
+
 from typing import Any, Dict, List, Tuple
 
 import pytest

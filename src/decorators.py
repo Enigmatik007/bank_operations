@@ -1,4 +1,5 @@
-# decorators.py
+"""Модуль декораторов для логирования вызовов функций."""
+
 import functools
 from datetime import datetime
 from typing import Any, Callable, Optional, TypeVar, cast

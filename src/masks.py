@@ -1,60 +1,53 @@
+"""Модуль для маскирования банковских реквизитов."""
+
+from .log_config import setup_logger
+
+logger = setup_logger(__name__, 'logs/masks.log')
+
+
 def _validate_number(number: str, required_length: int, name: str) -> None:
-    """
-    Валидирует номер (карты или счета) по длине и цифровому составу.
+    """Валидирует номер карты или счета.
 
     Args:
-        number (str): Номер для проверки.
-        required_length (int): Минимальная требуемая длина номера.
-        name (str): Тип номера ('карты' или 'счета') для сообщения об ошибке.
+        number (str): Номер для проверки
+        required_length (int): Минимальная длина
+        name (str): Тип номера ('карты' или 'счета')
 
     Raises:
-        ValueError: Если номер короче required_length или содержит нецифровые символы.
-
-    Пример:
-        >>> _validate_number("1234", 4, "карты")  # Не вызовет ошибок
-        >>> _validate_number("123", 4, "счета")   # Вызовет ValueError
+        ValueError: При невалидном номере
     """
-    if len(number) < required_length or not number.isdigit():
-        raise ValueError(f"Номер {name} должен содержать минимум {required_length} цифр")
+    if not isinstance(number, str) or not number.isdigit():
+        error_msg = f'Номер {name} должен содержать только цифры'
+        logger.error(error_msg)
+        raise ValueError(error_msg)
+
+    if len(number) < required_length:
+        error_msg = f'Номер {name} должен содержать минимум {required_length} цифр'
+        logger.error(error_msg)
+        raise ValueError(error_msg)
 
 
 def get_mask_card_number(card_number: str) -> str:
-    """
-    Маскирует номер банковской карты, оставляя видимыми первые 6 и последние 4 цифры.
+    """Маскирует номер банковской карты.
 
     Args:
-        card_number (str): 16-значный номер карты без пробелов.
+        card_number (str): 16-значный номер карты
 
     Returns:
-        str: Замаскированный номер в формате 'XXXX XX** **** XXXX'.
-
-    Raises:
-        ValueError: Если номер не содержит 16 цифр.
-
-    Пример:
-        >>> get_mask_card_number("7000792289606361")
-        '7000 79** **** 6361'
+        str: Маскированный номер формата "XXXX XX** **** XXXX"
     """
-    _validate_number(card_number, 16, "карты")
-    return f"{card_number[:4]} {card_number[4:6]}** **** {card_number[-4:]}"
+    _validate_number(card_number, 16, 'карты')
+    return f'{card_number[:4]} {card_number[4:6]}** **** {card_number[-4:]}'
 
 
 def get_mask_account(account_number: str) -> str:
-    """
-    Маскирует номер счета, оставляя видимыми только последние 4 цифры.
+    """Маскирует номер банковского счета.
 
     Args:
-        account_number (str): Номер счета (минимум 4 цифры).
+        account_number (str): Номер счета
 
     Returns:
-        str: Замаскированный номер в формате '**XXXX'.
-
-    Raises:
-        ValueError: Если номер содержит меньше 4 цифр.
-
-    Пример:
-        >>> get_mask_account("73654108430135874305")
-        '**4305'
+        str: Маскированный номер формата "**XXXX"
     """
-    _validate_number(account_number, 4, "счета")
-    return f"**{account_number[-4:]}"
+    _validate_number(account_number, 4, 'счета')
+    return f'**{account_number[-4:]}'
