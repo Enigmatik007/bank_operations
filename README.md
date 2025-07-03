@@ -107,18 +107,19 @@ start htmlcov/index.html  # открыть отчет в браузере (Windo
 
 ```
 tests/
-├── init.py # Инициализация тестового пакета
-├── conftest.py # Общие фикстуры:
-│ # - sample_transactions
-│ # - card_and_account_data
-│ # - mock_api
-├── test_decorators.py # Тесты декоратора @log
-├── test_external_api.py # Тесты работы с внешним API
-├── test_generators.py # Тесты генераторов транзакций
-├── test_masks.py # Тесты функций маскировки
-├── test_processing.py # Тесты обработки операций
-├── test_utils.py # Тесты загрузки данных
-└── test_widget.py # Тесты виджета (маскировка + даты)
+├── __init__.py             # Инициализация тестового пакета
+├── conftest.py             # Общие фикстуры:
+│                           # - sample_transactions
+│                           # - card_and_account_data
+│                           # - mock_api
+├── test_decorators.py      # Тесты декоратора @log
+├── test_external_api.py    # Тесты работы с внешним API
+├── test_generators.py      # Тесты генераторов транзакций
+├── test_masks.py           # Тесты функций маскировки
+│                           # (валидные/ошибочные случаи)
+├── test_processing.py      # Тесты обработки операций
+├── test_utils.py           # Тесты загрузки данных
+└── test_widget.py          # Тесты виджета (маскировка + даты)
 ```
 
 Все тесты покрыты параметризацией и снабжены комментариями.
