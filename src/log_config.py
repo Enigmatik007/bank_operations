@@ -1,16 +1,17 @@
-# log_config.py
+"""Модуль конфигурации логгеров для банковских операций."""
+
 import logging
 
 
 def setup_logger(name: str, log_file: str) -> logging.Logger:
-    """Настраивает и возвращает логгер с заданными параметрами.
+    """Инициализирует и настраивает логгер.
 
     Args:
-        name: Имя логгера (обычно __name__)
-        log_file: Путь к файлу логов
+        name (str): Имя логгера (обычно __name__)
+        log_file (str): Путь к файлу логов
 
     Returns:
-        Настроенный объект логгера
+        logging.Logger: Настроенный объект логгера
     """
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
@@ -23,8 +24,5 @@ def setup_logger(name: str, log_file: str) -> logging.Logger:
 
     handler.setFormatter(formatter)
     logger.addHandler(handler)
-
-    # Предотвращаем дублирование логов
-    logger.propagate = False
 
     return logger

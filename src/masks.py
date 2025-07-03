@@ -1,81 +1,53 @@
-"""Модуль для маскирования банковских реквизитов.
+"""Модуль для маскирования банковских реквизитов."""
 
-Содержит функции для валидации и форматирования номеров карт и счетов.
-"""
+from .log_config import setup_logger
 
-import logging
-from src.log_config import setup_logger
+logger = setup_logger(__name__, 'logs/masks.log')
 
-logger = setup_logger(__name__, "logs/masks.log")
 
 def _validate_number(number: str, required_length: int, name: str) -> None:
-    """Проверяет корректность номера карты или счета.
+    """Валидирует номер карты или счета.
 
     Args:
-        number: Номер для проверки (только цифры).
-        required_length: Минимально допустимая длина номера.
-        name: Тип номера ('карты' или 'счета') для сообщения об ошибке.
+        number (str): Номер для проверки
+        required_length (int): Минимальная длина
+        name (str): Тип номера ('карты' или 'счета')
 
     Raises:
-        ValueError: Если номер:
-            - Не является строкой
-            - Содержит нецифровые символы
-            - Короче required_length
-
-    Examples:
-        >>> _validate_number("12345678", 8, "карты")  # Валидный номер
-        >>> _validate_number("123abc", 8, "счета")    # ValueError
+        ValueError: При невалидном номере
     """
     if not isinstance(number, str) or not number.isdigit():
-        error_msg = f"Номер {name} должен содержать только цифры"
+        error_msg = f'Номер {name} должен содержать только цифры'
         logger.error(error_msg)
         raise ValueError(error_msg)
 
     if len(number) < required_length:
-        error_msg = f"Номер {name} должен содержать минимум {required_length} цифр"
+        error_msg = f'Номер {name} должен содержать минимум {required_length} цифр'
         logger.error(error_msg)
         raise ValueError(error_msg)
 
-    logger.debug(f"Валидация номера {name} успешна")
 
 def get_mask_card_number(card_number: str) -> str:
-    """Генерирует маскированный номер карты.
+    """Маскирует номер банковской карты.
 
     Args:
-        card_number: 16-значный номер карты без пробелов.
+        card_number (str): 16-значный номер карты
 
     Returns:
-        Отформатированная строка вида "XXXX XX** **** XXXX".
-
-    Raises:
-        ValueError: Если номер карты некорректен.
-
-    Examples:
-        >>> get_mask_card_number("7000792289606361")
-        '7000 79** **** 6361'
+        str: Маскированный номер формата "XXXX XX** **** XXXX"
     """
-    _validate_number(card_number, 16, "карты")
-    masked = f"{card_number[:4]} {card_number[4:6]}** **** {card_number[-4:]}"
-    logger.info(f"Сгенерирована маска карты: {masked}")
-    return masked
+    _validate_number(card_number, 16, 'карты')
+    return f'{card_number[:4]} {card_number[4:6]}** **** {card_number[-4:]}'
+
 
 def get_mask_account(account_number: str) -> str:
-    """Генерирует маскированный номер счета.
+    """Маскирует номер банковского счета.
 
     Args:
-        account_number: Номер счета (минимум 4 цифры).
+        account_number (str): Номер счета
 
     Returns:
-        Отформатированная строка вида "**XXXX".
-
-    Raises:
-        ValueError: Если номер счета некорректен.
-
-    Examples:
-        >>> get_mask_account("73654108430135874305")
-        '**4305'
+        str: Маскированный номер формата "**XXXX"
     """
-    _validate_number(account_number, 4, "счета")
-    masked = f"**{account_number[-4:]}"
-    logger.info(f"Сгенерирована маска счета: {masked}")
-    return masked
+    _validate_number(account_number, 4, 'счета')
+    return f'**{account_number[-4:]}'
