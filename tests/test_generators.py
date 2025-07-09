@@ -1,3 +1,5 @@
+"""Тесты для модуля generators."""
+
 from typing import Any, Dict, List
 
 import pytest
@@ -7,9 +9,7 @@ from src.generators import card_number_generator, filter_by_currency, transactio
 
 @pytest.fixture
 def sample_transactions() -> List[Dict[str, Any]]:
-    """
-    Фикстура с тестовыми данными транзакций.
-    """
+    """Фикстура с тестовыми данными транзакций."""
     return [
         {"description": "Перевод организации", "operationAmount": {"currency": {"code": "USD"}}},
         {"description": "Перевод со счета на счет", "operationAmount": {"currency": {"code": "RUB"}}},
@@ -21,17 +21,13 @@ def sample_transactions() -> List[Dict[str, Any]]:
 
 @pytest.mark.parametrize("currency,expected_count", [("USD", 3), ("RUB", 2), ("EUR", 0)])
 def test_filter_by_currency(sample_transactions: List[Dict[str, Any]], currency: str, expected_count: int) -> None:
-    """
-    Тестирует фильтрацию транзакций по валюте.
-    """
+    """Тестирует фильтрацию транзакций по валюте."""
     filtered = list(filter_by_currency(sample_transactions, currency))
     assert len(filtered) == expected_count
 
 
 def test_transaction_descriptions(sample_transactions: List[Dict[str, Any]]) -> None:
-    """
-    Тестирует генерацию описаний транзакций.
-    """
+    """Тестирует генерацию описаний транзакций."""
     descriptions = list(transaction_descriptions(sample_transactions))
     expected = [
         "Перевод организации",
@@ -71,8 +67,6 @@ def test_transaction_descriptions(sample_transactions: List[Dict[str, Any]]) -> 
     ],
 )
 def test_card_number_generator(start: int, end: int, expected: List[str]) -> None:
-    """
-    Тестирует генератор номеров карт.
-    """
+    """Тестирует генератор номеров карт."""
     result = list(card_number_generator(start, end))
     assert result == expected

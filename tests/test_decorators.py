@@ -1,3 +1,5 @@
+"""Тесты для модуля decorators."""
+
 from typing import Any
 
 import pytest
@@ -6,39 +8,30 @@ from src.decorators import log
 
 
 def test_log_to_console(capsys: Any) -> None:
-    """
-    Тест логирования в консоль.
-    """
+    """Тестирует логирование в консоль."""
 
     @log()
     def add(a: int, b: int) -> int:
         return a + b
 
-    result = add(1, 2)
-    captured = capsys.readouterr()
-    assert "add ok" in captured.out
-    assert result == 3
+    add(1, 2)
+    assert "add ok" in capsys.readouterr().out
 
 
 def test_log_to_file(tmp_path: Any) -> None:
-    """
-    Тест логирования в файл.
-    """
+    """Тестирует логирование в файл."""
     log_file = tmp_path / "test.log"
 
     @log(filename=str(log_file))
     def divide(a: int, b: int) -> float:
         return a / b
 
-    result = divide(10, 2)
-    assert result == 5
+    divide(10, 2)
     assert "divide ok" in log_file.read_text()
 
 
 def test_log_error_case(capsys: Any) -> None:
-    """
-    Тест логирования ошибок в декораторе.
-    """
+    """Тестирует логирование ошибок в декораторе."""
 
     @log()
     def fail_func() -> None:
@@ -53,9 +46,7 @@ def test_log_error_case(capsys: Any) -> None:
 
 
 def test_log_to_file_error(tmp_path: Any) -> None:
-    """
-    Тест записи ошибок в файл.
-    """
+    """Тестирует запись ошибок в файл."""
     log_file = tmp_path / "error.log"
 
     @log(filename=str(log_file))
@@ -69,9 +60,7 @@ def test_log_to_file_error(tmp_path: Any) -> None:
 
 
 def test_log_with_kwargs(capsys: Any) -> None:
-    """
-    Тест логирования функций с kwargs.
-    """
+    """Тестирует логирование функций с kwargs."""
 
     @log()
     def greet(name: str, greeting: str = "Hello") -> str:

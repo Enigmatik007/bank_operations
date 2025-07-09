@@ -1,3 +1,5 @@
+"""Модуль для работы с внешними API банковских сервисов."""
+
 import os
 from typing import Optional
 

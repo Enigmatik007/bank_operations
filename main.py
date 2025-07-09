@@ -1,29 +1,18 @@
-from src.masks import get_mask_account, get_mask_card_number
+"""Главный скрипт для работы с банковскими операциями."""
+
+from src.masks import get_mask_card_number  # Убрали неиспользуемый импорт
 from src.widget import get_date, mask_account_card
 
 
 def main() -> None:
-    """
-    Проверка всех функций.
-    Демонстрация работы модулей масок и виджетов через консольный ввод.
-    """
-    # Проверка масок (старые функции)
-    card = input("Введите номер карты (16 цифр): ")
-    account = input("Введите номер счета: ")
-
-    try:
-        print(f"\nМаска карты: {get_mask_card_number(card)}")
-        print(f"Маска счета: {get_mask_account(account)}")
-    except ValueError as e:
-        print(f"Ошибка: {e}")
-
-    # Проверка новых функций
-    data = input("\nВведите 'Тип Номер' (напр. 'Visa 1234...' или 'Счет 1234...'): ")
-    print(f"Результат mask_account_card: {mask_account_card(data)}")
-
-    date = input("Введите дату (ГГГГ-ММ-ДДTHH:MM:SS): ")
-    print(f"Результат get_date: {get_date(date)}")
+    """Точка входа в приложение."""
+    print('Демонстрация работы модулей:')
+    print('\nМаскирование карт:')
+    print(get_mask_card_number('7000792289606361'))
+    print('\nФорматирование данных:')
+    print(mask_account_card('Visa Platinum 7000792289606361'))
+    print(get_date('2024-03-11T02:26:18.671407'))
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
