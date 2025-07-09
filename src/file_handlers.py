@@ -20,7 +20,7 @@ def read_csv_file(file_path: str | Path) -> List[Dict[str, Any]]:
         Список словарей с данными транзакций.
     """
     try:
-        df = pd.read_csv(file_path)
+        df = pd.read_csv(file_path, delimiter=';')
         return df.to_dict("records")
     except Exception as e:
         logger.error(f"Ошибка чтения CSV: {e}")
