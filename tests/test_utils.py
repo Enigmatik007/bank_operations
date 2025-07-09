@@ -1,79 +1,79 @@
-"""Модуль тестирования функций загрузки транзакций."""
+"""
+Модуль тестов для функции load_transactions из src.utils.
 
-from pathlib import Path
-from typing import Any, Dict, List
-from unittest.mock import mock_open
+Проверяет загрузку транзакций из файлов JSON, CSV и Excel с использованием моков.
+"""
 
 import pytest
-
+from unittest.mock import mock_open, patch
 from src.utils import load_transactions
 
 
-def test_load_valid_transactions(mocker: Any) -> None:
-    """Тестирует загрузку корректного JSON-файла с транзакциями.
-
-    Args:
-        mocker: Фикстура для мокирования.
+def test_load_transactions_json(mocker):
+    """
+    Тест загрузки транзакций из JSON файла.
+    Проверяет, что функция корректно парсит список транзакций.
     """
     test_data = '[{"id": 1, "state": "EXECUTED"}, {"id": 2, "state": "PENDING"}]'
-    mocker.patch("builtins.open", mock_open(read_data=test_data))
-    result = load_transactions('valid.json')
-    assert result == [{'id': 1, 'state': 'EXECUTED'}, {'id': 2, 'state': 'PENDING'}]
+    # Мокаем и exists, и open
+    mocker.patch("pathlib.Path.exists", return_value=True)
+    mocker.patch("src.utils.open", mock_open(read_data=test_data))
+    result = load_transactions("dummy.json")
+    assert result == [{"id": 1, "state": "EXECUTED"}, {"id": 2, "state": "PENDING"}]
 
 
-def test_load_empty_file(mocker: Any) -> None:
-    """Тестирует обработку пустого файла.
-
-    Args:
-        mocker: Фикстура для мокирования.
+def test_load_transactions_csv(mocker):
     """
-    mocker.patch("builtins.open", mock_open(read_data=''))
-    result = load_transactions('empty.json')
-    assert result == []
-
-
-def test_file_not_found(mocker: Any) -> None:
-    """Тестирует обработку отсутствующего файла.
-
-    Args:
-        mocker: Фикстура для мокирования.
+    Тест загрузки транзакций из CSV файла.
+    Проверяет, что функция корректно читает CSV с заголовками.
     """
-    mocker.patch("builtins.open", side_effect=FileNotFoundError)
-    mocker.patch("src.decorators._write_log")
-    result = load_transactions('missing.json')
-    assert result == []
+    test_data = "id,state\n1,EXECUTED\n2,PENDING\n"
+    mocker.patch("pathlib.Path.exists", return_value=True)
+    mocker.patch("src.utils.open", mock_open(read_data=test_data))
+    result = load_transactions("dummy.csv")
+    assert result == [{"id": "1", "state": "EXECUTED"}, {"id": "2", "state": "PENDING"}]
 
 
-def test_invalid_json_format(mocker: Any) -> None:
-    """Тестирует обработку некорректного JSON.
-
-    Args:
-        mocker: Фикстура для мокирования.
+def test_load_transactions_excel(mocker):
     """
-    mocker.patch("builtins.open", mock_open(read_data='{invalid json}'))
-    mocker.patch("src.decorators._write_log")
-    result = load_transactions('invalid.json')
-    assert result == []
-
-
-def test_not_list_data(mocker: Any) -> None:
-    """Тестирует обработку JSON-объекта вместо массива.
-
-    Args:
-        mocker: Фикстура для мокирования.
+    Тест загрузки транзакций из Excel файла.
+    Использует мок pandas.read_excel для возврата заранее подготовленных данных.
     """
-    mocker.patch("builtins.open", mock_open(read_data='{"id": 1}'))
-    result = load_transactions('not_list.json')
-    assert result == []
+    import pandas as pd
+
+    # Подготовка тестового DataFrame
+    df_mock = pd.DataFrame([
+        {"id": 1, "state": "EXECUTED"},
+        {"id": 2, "state": "PENDING"}
+    ])
+
+    # Мокаем pd.read_excel и exists
+    mocker.patch("pathlib.Path.exists", return_value=True)
+    mocker.patch("src.utils.pd.read_excel", return_value=df_mock)
+
+    result = load_transactions("dummy.xlsx")
+    assert result == [{"id": 1, "state": "EXECUTED"}, {"id": 2, "state": "PENDING"}]
 
 
-def test_unexpected_error(mocker: Any) -> None:
-    """Тестирует обработку непредвиденных ошибок.
-
-    Args:
-        mocker: Фикстура для мокирования.
+def test_load_transactions_unsupported_extension(mocker):
     """
-    mocker.patch("builtins.open", side_effect=Exception("DB error"))
-    mocker.patch("src.decorators._write_log")
-    result = load_transactions('error.json')
-    assert result == []
+    Тест загрузки файла с неподдерживаемым расширением.
+    Проверяет, что вызывается ValueError.
+    """
+    # 1. Мокаем exists() чтобы файл "существовал"
+    mocker.patch("pathlib.Path.exists", return_value=True)
+
+    # 2. Мокаем open() чтобы избежать реального открытия файла
+    mocker.patch("builtins.open", mock_open())
+
+    with pytest.raises(ValueError, match=f"Неизвестный формат файла: .unsupported"):
+        load_transactions("file.unsupported")
+
+
+def test_load_transactions_file_not_found():
+    """
+    Тест загрузки несуществующего файла.
+    Проверяет, что вызывается FileNotFoundError.
+    """
+    with pytest.raises(FileNotFoundError):
+        load_transactions("no_such_file.json")

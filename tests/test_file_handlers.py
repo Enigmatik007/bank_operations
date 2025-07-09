@@ -1,10 +1,7 @@
 """Тесты для модуля file_handlers."""
 
 from pathlib import Path
-from typing import Any, Dict, List
 from unittest.mock import MagicMock, patch
-
-import pytest
 
 from src.file_handlers import read_csv_file, read_excel_file
 

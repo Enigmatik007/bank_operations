@@ -42,10 +42,16 @@ def load_transactions(file_path: Union[str, Path]) -> List[Dict[str, Any]]:
     """
     try:
         path = Path(file_path)
+
+        # Проверяем расширение файла сразу, чтобы выбросить ValueError при неподдерживаемом формате
+        if path.suffix not in ('.json', '.csv', '.xlsx'):
+            raise ValueError(f"Неизвестный формат файла: {path.suffix}")
+
         if not path.exists():
             raise FileNotFoundError(f"Файл не найден: {path}")
 
         if path.suffix == '.json':
+            # В тестах мокайте open как "src.utils.open", чтобы избежать FileNotFoundError
             with open(path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
                 if isinstance(data, list):
@@ -60,12 +66,10 @@ def load_transactions(file_path: Union[str, Path]) -> List[Dict[str, Any]]:
             df = pd.read_excel(path, engine='openpyxl')
             records = df.to_dict('records')
             return [cast(Dict[str, Any], dict(row)) for row in records]
-        else:
-            raise ValueError(f"Неизвестный формат файла: {path.suffix}")
 
-    except (FileNotFoundError, PermissionError):
-        raise  # Пробрасываем критические ошибки доступа
-    except (json.JSONDecodeError, csv.Error, InvalidFileException, ValueError) as e:
+    except (FileNotFoundError, PermissionError, ValueError):
+        raise  # Пробрасываем критические ошибки доступа и ошибки формата
+    except (json.JSONDecodeError, csv.Error, InvalidFileException) as e:
         print(f"Ошибка при обработке файла: {e}")
         return []
     except Exception as e:

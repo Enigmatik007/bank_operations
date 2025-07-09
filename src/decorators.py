@@ -3,7 +3,7 @@
 import functools
 import os
 from datetime import datetime
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, Optional
 
 
 def _write_log(message: str, filename: Optional[str] = None) -> None:
