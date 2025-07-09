@@ -69,10 +69,16 @@ def main() -> None:
 @lru_cache(maxsize=3)
 def _load_data(file_type: str) -> List[Dict[str, Any]]:
     """Загружает транзакции из файла с кешированием."""
-    if file_type == 'json':
-        file_path = "data/operations.json"
-    else:
-        file_path = f"data/transactions.{file_type}"
+    file_map = {
+        'json': 'operations.json',           # или 'transactions.json', если у вас так
+        'csv': 'transactions.csv',
+        'xlsx': 'transactions_excel.xlsx',
+    }
+    file_name = file_map.get(file_type)
+    if not file_name:
+        print(f"Неизвестный тип файла: {file_type}")
+        return []
+    file_path = f"data/{file_name}"
     return load_transactions(file_path)
 
 
