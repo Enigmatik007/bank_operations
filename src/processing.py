@@ -1,12 +1,16 @@
-"""Модуль для обработки банковских транзакций: фильтрация, сортировка, поиск и анализ."""
-from typing import List, Dict
-from functools import lru_cache
+"""Модуль для обработки банковских транзакций.
+
+Содержит функции для фильтрации, сортировки, поиска и анализа транзакций.
+"""
+
 import re
+from typing import Dict, List
+
 from src.decorators import log
 
-### --- Фильтрация и сортировка транзакций ---
+
 def filter_by_state(operations: List[Dict], state: str = "EXECUTED") -> List[Dict]:
-    """Возвращает транзакции с указанным статусом (например, 'EXECUTED').
+    """Фильтрует транзакции по статусу.
 
     Args:
         operations: Список транзакций.
@@ -17,11 +21,12 @@ def filter_by_state(operations: List[Dict], state: str = "EXECUTED") -> List[Dic
     """
     return [op for op in operations if op.get("state") == state]
 
+
 def sort_by_date(operations: List[Dict], reverse: bool = True) -> List[Dict]:
-    """Сортирует транзакции по дате (новые сверху по умолчанию).
+    """Сортирует транзакции по дате.
 
     Args:
-        operations: Список операций с полем "date".
+        operations: Список операций.
         reverse: Сортировка по убыванию (по умолчанию True).
 
     Returns:
@@ -29,39 +34,36 @@ def sort_by_date(operations: List[Dict], reverse: bool = True) -> List[Dict]:
     """
     return sorted(operations, key=lambda x: x["date"], reverse=reverse)
 
-### --- Поиск и анализ транзакций ---
+
 @log(filename='logs/processing.log')
 def search_by_description(transactions: List[Dict], search_str: str) -> List[Dict]:
-    """Ищет транзакции, содержащие указанную строку в описании (регистронезависимо).
+    """Ищет транзакции по подстроке в описании.
 
     Args:
         transactions: Список транзакций.
-        search_str: Строка для поиска (например, 'перевод').
+        search_str: Подстрока для поиска.
 
     Returns:
-        Список транзакций, где description содержит search_str.
-    Raises:
-        ValueError: Если поиск не удался.
+        Список найденных транзакций.
     """
-    try:
-        pattern = re.compile(re.escape(search_str), re.IGNORECASE)
-        return [t for t in transactions if pattern.search(t.get('description', ''))]
-    except Exception as e:
-        raise ValueError(f"Ошибка поиска: {e}")
+    pattern = re.compile(re.escape(search_str), re.IGNORECASE)
+    return [t for t in transactions if pattern.search(t.get('description', ''))]
+
 
 @log()
-@lru_cache(maxsize=100)
 def count_by_category(transactions: List[Dict], categories: List[str]) -> Dict[str, int]:
-    """Подсчитывает, сколько раз встречается каждая категория операций.
+    """Подсчитывает количество транзакций по категориям.
 
     Args:
         transactions: Список транзакций.
-        categories: Список категорий для подсчёта (например, ['Перевод', 'Оплата']).
+        categories: Список категорий для подсчета.
 
     Returns:
-        Словарь вида {'категория': количество}.
+        Словарь с количеством транзакций по категориям.
     """
     if not transactions or not categories:
         return {}
+
+    # Удаляем lru_cache и изменяем реализацию
     descriptions = [t.get('description', '') for t in transactions]
     return {cat: descriptions.count(cat) for cat in categories if cat in descriptions}

@@ -1,45 +1,79 @@
-"""Тесты для модуля utils."""
+"""Модуль тестирования функций загрузки транзакций."""
 
-from unittest.mock import mock_open, patch
+from pathlib import Path
+from typing import Any, Dict, List
+from unittest.mock import mock_open
+
+import pytest
 
 from src.utils import load_transactions
 
 
-def test_load_valid_transactions() -> None:
-    """Тестирует загрузку валидного файла с транзакциями."""
-    test_data = '[{"id": 1, "state": "EXECUTED"}]'
-    with patch('builtins.open', mock_open(read_data=test_data)):
-        result = load_transactions('valid.json')
-        assert result == [{'id': 1, 'state': 'EXECUTED'}]
+def test_load_valid_transactions(mocker: Any) -> None:
+    """Тестирует загрузку корректного JSON-файла с транзакциями.
+
+    Args:
+        mocker: Фикстура для мокирования.
+    """
+    test_data = '[{"id": 1, "state": "EXECUTED"}, {"id": 2, "state": "PENDING"}]'
+    mocker.patch("builtins.open", mock_open(read_data=test_data))
+    result = load_transactions('valid.json')
+    assert result == [{'id': 1, 'state': 'EXECUTED'}, {'id': 2, 'state': 'PENDING'}]
 
 
-def test_load_empty_file() -> None:
-    """Тестирует загрузку пустого файла."""
-    with patch('builtins.open', mock_open(read_data='')):
-        assert load_transactions('empty.json') == []
+def test_load_empty_file(mocker: Any) -> None:
+    """Тестирует обработку пустого файла.
+
+    Args:
+        mocker: Фикстура для мокирования.
+    """
+    mocker.patch("builtins.open", mock_open(read_data=''))
+    result = load_transactions('empty.json')
+    assert result == []
 
 
-def test_file_not_found() -> None:
-    """Тестирует обработку отсутствующего файла."""
-    with patch('builtins.open', side_effect=FileNotFoundError):
-        assert load_transactions('missing.json') == []
+def test_file_not_found(mocker: Any) -> None:
+    """Тестирует обработку отсутствующего файла.
+
+    Args:
+        mocker: Фикстура для мокирования.
+    """
+    mocker.patch("builtins.open", side_effect=FileNotFoundError)
+    mocker.patch("src.decorators._write_log")
+    result = load_transactions('missing.json')
+    assert result == []
 
 
-def test_invalid_json_format() -> None:
-    """Тестирует обработку невалидного JSON."""
-    test_data = 'invalid json'
-    with patch('builtins.open', mock_open(read_data=test_data)):
-        assert load_transactions('invalid.json') == []
+def test_invalid_json_format(mocker: Any) -> None:
+    """Тестирует обработку некорректного JSON.
+
+    Args:
+        mocker: Фикстура для мокирования.
+    """
+    mocker.patch("builtins.open", mock_open(read_data='{invalid json}'))
+    mocker.patch("src.decorators._write_log")
+    result = load_transactions('invalid.json')
+    assert result == []
 
 
-def test_not_list_data() -> None:
-    """Тестирует обработку JSON, который не является списком."""
-    test_data = '{"id": 1, "state": "EXECUTED"}'
-    with patch('builtins.open', mock_open(read_data=test_data)):
-        assert load_transactions('not_list.json') == []
+def test_not_list_data(mocker: Any) -> None:
+    """Тестирует обработку JSON-объекта вместо массива.
+
+    Args:
+        mocker: Фикстура для мокирования.
+    """
+    mocker.patch("builtins.open", mock_open(read_data='{"id": 1}'))
+    result = load_transactions('not_list.json')
+    assert result == []
 
 
-def test_unexpected_error() -> None:
-    """Тестирует обработку непредвиденных ошибок."""
-    with patch('builtins.open', side_effect=Exception("Unexpected error")):
-        assert load_transactions('error.json') == []
+def test_unexpected_error(mocker: Any) -> None:
+    """Тестирует обработку непредвиденных ошибок.
+
+    Args:
+        mocker: Фикстура для мокирования.
+    """
+    mocker.patch("builtins.open", side_effect=Exception("DB error"))
+    mocker.patch("src.decorators._write_log")
+    result = load_transactions('error.json')
+    assert result == []

@@ -1,41 +1,31 @@
-"""Модуль для загрузки и обработки банковских транзакций."""
+"""Модуль для загрузки банковских транзакций из файлов различных форматов."""
 
+import csv
 import json
-from typing import Any, Dict, List
+from pathlib import Path
+from typing import Any, Dict, List, Union
 
-from .log_config import setup_logger
+import pandas as pd
 
-logger = setup_logger(__name__, 'logs/utils.log')
+from .decorators import log
 
 
-def load_transactions(file_path: str) -> List[Dict[str, Any]]:
-    """Загружает транзакции из JSON-файла.
-
-    Args:
-        file_path (str): Путь к JSON-файлу
-
-    Returns:
-        List[Dict[str, Any]]: Список транзакций или пустой список при ошибках
-
-    Raises:
-        Логирует ошибки, но не пробрасывает исключения
-    """
+@log(filename='logs/utils.log')
+def load_transactions(file_path: Union[str, Path]) -> List[Dict[str, Any]]:
+    """Загружает список транзакций из файла указанного формата."""
     try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-
-            if not isinstance(data, list):
-                logger.warning('Файл %s не содержит список', file_path)
-                return []
-
-            return data
-
-    except FileNotFoundError:
-        logger.error('Файл не найден: %s', file_path)
-        return []
-    except json.JSONDecodeError as e:
-        logger.error('Ошибка JSON в %s: %s', file_path, str(e))
-        return []
-    except Exception as e:
-        logger.critical('Непредвиденная ошибка: %s', str(e))
+        path = Path(file_path)
+        if path.suffix == '.json':
+            with open(path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                return data if isinstance(data, list) else []
+        elif path.suffix == '.csv':
+            with open(path, 'r', encoding='utf-8') as f:
+                return [dict(row) for row in csv.DictReader(f)]  # Явное преобразование
+        elif path.suffix == '.xlsx':
+            df = pd.read_excel(path, engine='openpyxl')
+            return [dict(row) for row in df.to_dict('records')]  # Явное преобразование
+        else:
+            raise ValueError(f"Неизвестный формат файла: {path.suffix}")
+    except Exception:
         return []

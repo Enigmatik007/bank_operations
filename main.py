@@ -1,17 +1,43 @@
-"""Главный скрипт для работы с банковскими операциями."""
+"""Главный модуль для взаимодействия с пользователем и обработки транзакций."""
 
-from src.masks import get_mask_card_number  # Убрали неиспользуемый импорт
-from src.widget import get_date, mask_account_card
+from functools import lru_cache
+from typing import Dict, List
+
+from src.decorators import log
+from src.processing import count_by_category, filter_by_state, search_by_description, sort_by_date
+from src.utils import load_transactions
 
 
+@log(filename='logs/main.log')
 def main() -> None:
-    """Точка входа в приложение."""
-    print('Демонстрация работы модулей:')
-    print('\nМаскирование карт:')
-    print(get_mask_card_number('7000792289606361'))
-    print('\nФорматирование данных:')
-    print(mask_account_card('Visa Platinum 7000792289606361'))
-    print(get_date('2024-03-11T02:26:18.671407'))
+    """Предоставляет интерфейс для работы с банковскими транзакциями."""
+    print("Привет! Добро пожаловать в программу работы с транзакциями.")
+    _handle_user_interaction()
+
+
+def _handle_user_interaction() -> None:
+    """Обрабатывает пользовательский ввод в цикле."""
+    while True:
+        choice = input(
+            "Выберите действие:\n" "1. Загрузить транзакции\n" "2. Проанализировать данные\n" "0. Выход\n> "
+        ).strip()
+
+        if choice == '0':
+            break
+
+        if choice == '1':
+            transactions = _load_data('json')  # Пример для JSON
+            print(f"Загружено {len(transactions)} транзакций")
+        elif choice == '2':
+            print("Анализ данных...")
+            # Реализация анализа
+
+
+@lru_cache(maxsize=3)
+def _load_data(file_type: str) -> List[Dict]:
+    """Загружает транзакции из файла с кешированием."""
+    file_path = f"data/transactions.{file_type}"
+    return load_transactions(file_path)
 
 
 if __name__ == '__main__':
