@@ -1,41 +1,78 @@
-"""Модуль для загрузки и обработки банковских транзакций."""
+"""Модуль для загрузки и обработки банковских транзакций из файлов различных форматов.
 
+Содержит функции для чтения транзакций из JSON, CSV и Excel файлов с автоматическим
+определением формата и обработкой ошибок.
+"""
+
+import csv
 import json
-from typing import Any, Dict, List
+from pathlib import Path
+from typing import Any, Dict, List, Union, cast
 
-from .log_config import setup_logger
+import pandas as pd
+from openpyxl.utils.exceptions import InvalidFileException
 
-logger = setup_logger(__name__, 'logs/utils.log')
+from .decorators import log
 
 
-def load_transactions(file_path: str) -> List[Dict[str, Any]]:
-    """Загружает транзакции из JSON-файла.
+@log(filename='logs/utils.log')
+def load_transactions(file_path: Union[str, Path]) -> List[Dict[str, Any]]:
+    """
+    Загружает список транзакций из файла указанного формата.
+
+    Поддерживаемые форматы:
+    - JSON (.json)
+    - CSV (.csv)
+    - Excel (.xlsx)
 
     Args:
-        file_path (str): Путь к JSON-файлу
+        file_path (Union[str, Path]): Путь к файлу с транзакциями (строка или Path-объект).
 
     Returns:
-        List[Dict[str, Any]]: Список транзакций или пустой список при ошибках
+        List[Dict[str, Any]]: Список словарей, где каждый словарь представляет одну транзакцию.
+        В случае ошибки чтения возвращает пустой список.
 
     Raises:
-        Логирует ошибки, но не пробрасывает исключения
+        FileNotFoundError: Если файл не существует.
+        PermissionError: Если нет прав доступа к файлу.
+        ValueError: Если передан файл неподдерживаемого формата.
+        json.JSONDecodeError: Для JSON файлов с синтаксическими ошибками.
+        csv.Error: Для ошибок чтения CSV.
+        InvalidFileException: Для битых Excel файлов.
     """
     try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
+        path = Path(file_path)
 
-            if not isinstance(data, list):
-                logger.warning('Файл %s не содержит список', file_path)
-                return []
+        # Проверяем расширение файла сразу, чтобы выбросить ValueError при неподдерживаемом формате
+        if path.suffix not in ('.json', '.csv', '.xlsx'):
+            raise ValueError(f"Неизвестный формат файла: {path.suffix}")
 
-            return data
+        if not path.exists():
+            raise FileNotFoundError(f"Файл не найден: {path}")
 
-    except FileNotFoundError:
-        logger.error('Файл не найден: %s', file_path)
-        return []
-    except json.JSONDecodeError as e:
-        logger.error('Ошибка JSON в %s: %s', file_path, str(e))
+        if path.suffix == '.json':
+            # В тестах мокайте open как "src.utils.open", чтобы избежать FileNotFoundError
+            with open(path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                if isinstance(data, list):
+                    return cast(List[Dict[str, Any]], data)
+                else:
+                    return []
+        elif path.suffix == '.csv':
+            with open(path, 'r', encoding='utf-8') as f:
+                rows = [dict(row) for row in csv.DictReader(f)]
+                return cast(List[Dict[str, Any]], rows)
+        elif path.suffix == '.xlsx':
+            df = pd.read_excel(path, engine='openpyxl')
+            records = df.to_dict('records')
+            return [cast(Dict[str, Any], dict(row)) for row in records]
+
+    except (FileNotFoundError, PermissionError, ValueError):
+        raise  # Пробрасываем критические ошибки доступа и ошибки формата
+    except (json.JSONDecodeError, csv.Error, InvalidFileException) as e:
+        print(f"Ошибка при обработке файла: {e}")
         return []
     except Exception as e:
-        logger.critical('Непредвиденная ошибка: %s', str(e))
-        return []
+        print(f"Неожиданная ошибка: {e}")
+        raise  # Пробрасываем неожиданные исключения
+
